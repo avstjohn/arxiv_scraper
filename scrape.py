@@ -1,4 +1,5 @@
 import arxiv
+import nltk
 from nltk import word_tokenize
 
 def store_results(results):
@@ -19,9 +20,17 @@ def store_results(results):
                 count += 1
         return (title, authors, date, summary, tags)
 
+def tokenize_and_sort(title, summary, tags, max_results):
+        title_tokens, summary_tokens, tags_tokens = [], [], []
+        for i in range(max_results):
+                title_tokens.append(sorted(set(word_tokenize(title[i]))))
+                summary_tokens.append(sorted(set(word_tokenize(summary[i]))))
+                tags_tokens.append(sorted(set(tags[i])))
+        return (title_tokens, summary_tokens, tags_tokens)
+
 #subjects = ["astro-ph", "cond-mat", "gr-qc", "hep-ex", "hep-lat",
 #          "hep-ph", "hep-th", "math-ph", "nlin", "nucl-ex",
-#          "nucl-th", "physics", "quant-ph"]
+#          "nucl-th", "physics", "quant-ph", "math"]
 
 
 subject = "hep-th"
@@ -35,4 +44,4 @@ results = arxiv.query(search_query=search_query, start=0, max_results=max_result
 
 title, authors, date, summary, tags = store_results(results)
 
-tokens =
+title_tokens, summary_tokens, tags_tokens = tokenize_and_sort(title, summary, tags, max_results)
