@@ -2,6 +2,10 @@ import arxiv
 import nltk
 from nltk import word_tokenize
 import re
+from collections import defaultdict
+import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams['backend'] = "Qt5Agg"
 
 def store_results(results):
         count = 0
@@ -12,7 +16,6 @@ def store_results(results):
                 summary.append(r['summary'].replace('\n', ' ').replace('  ', ' '))
                 pdf_url.append(r['pdf_url'])
 
-                #if count == 13: print(r['tags'])
                 authors_temp = []
                 for j in range(len(r['authors'])):
                         authors_temp.append(r['authors'][j])
@@ -41,13 +44,6 @@ physics_cats = ["astro-ph", "cond-mat", "gr-qc", "hep-ex", "hep-lat",
                 "hep-ph", "hep-th", "math-ph", "nlin", "nucl-ex",
                 "nucl-th", "physics", "quant-ph"]
 
-physics_prefix = "physics."
-physics_subcats = ["acc-ph", "app-ph", "ao-ph", "atom-ph", "atm-clus",
-                "bio-ph", "chem-ph", "class-ph", "comp-ph", "data-an",
-                "flu-dyn", "gen-ph", "geo-ph", "hist-ph", "ins-det",
-                "med-ph", "optics", "ed-ph", "soc-ph", "plasm-ph",
-                "pop-ph", "space-ph"]
-
 astroph_prefix = "astro-ph."
 astroph_cats = ["GA", "CO", "EP", "HE", "IM", "SR"]
 
@@ -56,8 +52,15 @@ condmat_cats = ["dis-nn", "mtrl-sci", "mes-hall", "other",
                 "quant-gas", "soft", "stat-mech", "str-el",
                 "supr-con"]
 
-nlin_prefic = "nlin."
+nlin_prefix = "nlin."
 nlin_cats = ["AO", "CG", "CD", "SI", "PS"]
+
+physics_prefix = "physics."
+physics_subcats = ["acc-ph", "app-ph", "ao-ph", "atom-ph", "atm-clus",
+                "bio-ph", "chem-ph", "class-ph", "comp-ph", "data-an",
+                "flu-dyn", "gen-ph", "geo-ph", "hist-ph", "ins-det",
+                "med-ph", "optics", "ed-ph", "soc-ph", "plasm-ph",
+                "pop-ph", "space-ph"]
 
 math_prefix = "math."
 math_cats = ["AG", "AT", "AP", "CT", "CA", "CO", "AC", "CV",
@@ -68,4 +71,23 @@ math_cats = ["AG", "AT", "AP", "CT", "CA", "CO", "AC", "CV",
 stat_prefix = "stat."
 stat_cats = ["AP", "CO", "ML", "ME", "OT", "TH"]
 
-tags
+cat_counts = defaultdict(int)
+for i in range(len(tags)):
+        for j in range(len(tags[i])):
+                if (tags[i][j] in physics_cats or
+                    tags[i][j] in [astroph_prefix + a for a in astroph_cats] or
+                    tags[i][j] in [condmat_prefix + a for a in condmat_cats] or
+                    tags[i][j] in [nlin_prefix + a for a in nlin_cats] or
+                    tags[i][j] in [physics_prefix + a for a in physics_subcats] or
+                    tags[i][j] in [math_prefix + a for a in math_cats] or
+                    tags[i][j] in [stat_prefix + a for a in stat_cats]):
+                    cat_counts[tags[i][j]] += 1
+
+x = np.arange(0, len(list(cat_counts.keys())))
+y = np.arange(0, max(cat_counts.values()))
+labels = list(cat_counts.keys())
+
+plt.xticks(x, labels, rotation=90);
+plt.bar(cat_counts.keys(), cat_counts.values())
+
+plt.show()
