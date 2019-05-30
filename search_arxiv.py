@@ -32,8 +32,8 @@ def store_results(results):
         return (title, authors, date, summary, tags, pdf_url)
 
 
-search_query = "tqft"
-max_results = 100
+search_query = "cobordism"
+max_results = 50
 
 results = arxiv.query(search_query=search_query, start=0, max_results=max_results,
                         sort_by="submittedDate", sort_order="descending")
@@ -83,11 +83,80 @@ for i in range(len(tags)):
                     tags[i][j] in [stat_prefix + a for a in stat_cats]):
                     cat_counts[tags[i][j]] += 1
 
-x = np.arange(0, len(list(cat_counts.keys())))
-y = np.arange(0, max(cat_counts.values()))
-labels = list(cat_counts.keys())
+author_counts = defaultdict(int)
+for i in range(len(authors)):
+        for j in range(len(authors[i])):
+                author_counts[authors[i][j]] += 1
 
-plt.xticks(x, labels, rotation=90);
-plt.bar(cat_counts.keys(), cat_counts.values())
+x_cat = np.arange(0, len(list(cat_counts.keys())))
+#y_cat = np.arange(0, max(cat_counts.values()))
+labels_cats = list(cat_counts.keys())
 
+plt.title("Common subjects of " + str(max_results) + " most recent publications by search term: " + search_query)
+plt.grid(True)
+plt.xticks(x_cat, labels_cats, rotation=90);
+plt.bar(cat_counts.keys(), sorted(cat_counts.values(), reverse=True))
+#plt.show()
+
+# x_authors = np.arange(0, len(list(author_counts.keys())))
+# labels_authors = list(author_counts.keys())
+#
+# plt.title("Common authors of " + str(max_results) + " most recent publications by search term: " + search_query)
+# plt.xticks(x_authors, labels_authors, rotation=90)
+# plt.bar(author_counts.keys(), sorted(author_counts.values(), reverse=True))
+#
+# plt.show()
+
+###
+
+# Create list of unique authors
+# authors = list of lists of authors per paper
+# unique_authors = list of authors, counted once
+unique_authors = []
+for i in range(len(authors)):
+        for j in range(len(authors[i])):
+                if authors[i][j] not in unique_authors:
+                        unique_authors.append(authors[i][j])
+
+# Sort authors by last name
+temp = []
+for a in unique_authors:
+        temp.append(a.split(" ")[-1] + ", " + a.split(" ")[0])
+unique_authors = temp
+unique_authors.sort()
+
+authors = np.array(authors)
+unique_authors = np.array(unique_authors)
+
+connectivity = np.zeros((len(authors), len(unique_authors)), dtype=int)
+for i in range(len(authors)):
+        authors_per_paper = np.array(authors[i])
+        temp = np.zeros((len(unique_authors)), dtype=int)
+        for j in range(len(authors[i])):
+                temp += (unique_authors == authors_per_paper[j])
+        connectivity[i,:] = temp
+connectivity
+
+fig = plt.figure(figsize=(10,5));
+plt.spy(connectivity, marker ='s', color='chartreuse', markersize=5);
+plt.xlabel('Authors');
+plt.ylabel('Articles');
+plt.title('Authors of the articles', fontweight='bold');
 plt.show()
+#
+# import pandas as pd
+#
+# df = pd.DataFrame(connectivity)
+# authors_conn = np.zeros((len(unique_authors), len(unique_authors)))
+#
+# for i in range(len(unique_authors)):
+#         df = df[df.iloc[:,j] > 0]
+#         sum_of_rows = np.array(df.sum())
+#         authors_conn[j] = sum_of_rows
+#
+# fig = plt.figure(figsize=(10,10));
+# plt.spy(authors_conn, marker ='s', color='chartreuse', markersize=3);
+# plt.xlabel('Authors');
+# plt.ylabel('Authors');
+# plt.title('Authors that are co-authors', fontweight='bold');
+# plt.show()
